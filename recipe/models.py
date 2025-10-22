@@ -48,7 +48,7 @@ class Recipe(TimeStampedModel):
     servings = models.IntegerField(default=1, help_text="Number of people the recipe serves",validators=[MinValueValidator(1)])
     prep_time = models.IntegerField(help_text="Time required to prepare ingredients in minutes")
     total_time = models.IntegerField(help_text="Preparation time + Cooking Time in minutes",validators=[MaxValueValidator(300),MinValueValidator(5)])
-    calories = models.IntegerField()
+    calories = models.IntegerField(validators=[MinValueValidator(0),MaxValueValidator(1000)])
     instructions = models.TextField()
     featured = models.BooleanField(default=False)
 
@@ -102,3 +102,6 @@ class RecipeImage(models.Model):
 
     class Meta:
         ordering =('-created_at',)
+
+    def __str__(self):
+        return f"Image for recipe: {self.recipe.title}"
