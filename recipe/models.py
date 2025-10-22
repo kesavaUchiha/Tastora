@@ -88,7 +88,7 @@ class Ingredient(TimeStampedModel):
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='ingredients')
     name = models.CharField(max_length=100)
-    quantity = models.FloatField()
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.IntegerField(validators=[MinValueValidator(0)],choices=UnitTypes.CHOICES, default=UnitTypes.GRAM)
     optional = models.BooleanField(default=False)
 
@@ -98,7 +98,7 @@ class Ingredient(TimeStampedModel):
 class Collection(TimeStampedModel):
     title = models.CharField(max_length=200)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='collections')
-
+    recipes = models.ManyToManyField(Recipe, blank=True)
     class Meta:
         ordering = ('-created_at', 'title')
         unique_together = ('title', 'owner')
