@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator,MaxValueValidator
 from django.conf import settings
+from django.forms import ValidationError
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -16,7 +17,7 @@ class Profile(TimeStampedModel):
     location = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return str(self.user)
+        return f'{self.user}'
 
 class Recipe(TimeStampedModel):
 
@@ -48,7 +49,7 @@ class Recipe(TimeStampedModel):
     servings = models.IntegerField(default=1, help_text="Number of people the recipe serves",validators=[MinValueValidator(1)])
     prep_time = models.IntegerField(help_text="Time required to prepare ingredients in minutes")
     total_time = models.IntegerField(help_text="Preparation time + Cooking Time in minutes",validators=[MaxValueValidator(300),MinValueValidator(5)])
-    calories = models.IntegerField(validators=[MinValueValidator(0),MaxValueValidator(1000)])
+    calories = models.IntegerField(validators=[MinValueValidator(0)])
     instructions = models.TextField()
     featured = models.BooleanField(default=False)
 
@@ -58,31 +59,41 @@ class Recipe(TimeStampedModel):
         verbose_name_plural = 'Recipes'
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
+    
+    def clean(self):
+
+        if self.total_time < self.prep_time:
+            raise ValidationError({
+                'total_time': "Total time cannot be less than preparation time."
+            })
 
 class Ingredient(TimeStampedModel):
 
     class UnitTypes:
-        GRAMS = 0
-        KILOGRAMS = 1
+        GRAM = 0
+        KILOGRAM = 1
         TEASPOON = 2
         TABLESPOON = 3
         CUP = 4
-        PIECES = 5
+        PIECE = 5
         CHOICES = (
-            (GRAMS, "grams"),
-            (KILOGRAMS, "kilograms"),
+            (GRAM, "grams"),
+            (KILOGRAM, "kilogram"),
             (TEASPOON, "teaspoon"),
             (TABLESPOON, "tablespoon"),
             (CUP, "cup"),
-            (PIECES, "pieces"),
+            (PIECE, "piece"),
         )
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='ingredients')
     name = models.CharField(max_length=100)
     quantity = models.FloatField()
-    unit = models.IntegerField(validators=[MinValueValidator(0)],choices=UnitTypes.CHOICES, default=UnitTypes.GRAMS)
+    unit = models.IntegerField(validators=[MinValueValidator(0)],choices=UnitTypes.CHOICES, default=UnitTypes.GRAM)
     optional = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.name}'
 
 class Collection(TimeStampedModel):
     title = models.CharField(max_length=200)
@@ -93,7 +104,7 @@ class Collection(TimeStampedModel):
         unique_together = ('title', 'owner')
 
     def __str__(self):
-        return self.title
+        return f"{self.title}"
 
 class RecipeImage(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='images')
