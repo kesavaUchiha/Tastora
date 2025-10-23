@@ -142,4 +142,3 @@ class RecipeImage(TimeStampedModel):
 
     def __str__(self):
         return f"Image for recipe: {self.recipe.title}"
-
