@@ -6,7 +6,7 @@
 
         {% include "includes/partials/NavBtn.html" with btn_name="About"%}
 
-        {% url 'recipe:recipe' as recipe_url %}
+        {% url 'recipe:recipes' as recipe_url %}
         {% include "includes/partials/NavBtn.html" with btn_name="Recipes" btn_link=recipe_url %}
 
         {% include "includes/partials/NavBtn.html" with btn_name="Contact"%}

@@ -1,15 +1,15 @@
-{% load static %}
+    {% load static %}
 
-<div class="relative rounded-md w-fit overflow-hidden">
-    <!-- Icon -->
-    <div class="absolute right-2 top-2 text-white text-xl">
-        {{ card_icon|safe }}
+    <div class="relative rounded-md w-fit overflow-hidden">
+        <!-- Icon -->
+        <div class="absolute right-2 top-2 text-white text-xl">
+            {{ card_icon|safe }}
+        </div>
+
+        <!-- Image -->
+        <img src="{% static card_img %}" 
+            alt="Home Image"
+            class="{{ card_w|default:'w-48' }} {{ card_h|default:'h-32' }} object-cover scale-x-[-1] rounded-md" />
+
+        
     </div>
-
-    <!-- Image -->
-    <img src="{% static card_img %}" 
-         alt="Home Image"
-         class="{{ card_w|default:'w-48' }} {{ card_h|default:'h-32' }} object-cover scale-x-[-1] rounded-md" />
-
-    
-</div>
