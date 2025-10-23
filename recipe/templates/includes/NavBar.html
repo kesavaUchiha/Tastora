@@ -1,9 +1,14 @@
 <nav class="px-2 py-3 flex justify-between items-center">
     <div>{% include "includes/partials/TastoraLogo.html" %}</div>
     <div class="flex ">
-        {% include "includes/partials/NavBtn.html" with btn_name="Home" btn_link="#"%}
+        {% url 'recipe:home' as home_url %}
+        {% include "includes/partials/NavBtn.html" with btn_name="Home" btn_link=home_url%}
+
         {% include "includes/partials/NavBtn.html" with btn_name="About"%}
-        {% include "includes/partials/NavBtn.html" with btn_name="Recipes"%}
+
+        {% url 'recipe:recipe' as recipe_url %}
+        {% include "includes/partials/NavBtn.html" with btn_name="Recipes" btn_link=recipe_url %}
+
         {% include "includes/partials/NavBtn.html" with btn_name="Contact"%}
     </div>
 
