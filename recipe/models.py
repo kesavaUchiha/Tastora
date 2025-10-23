@@ -63,6 +63,7 @@ class Recipe(TimeStampedModel):
     calories = models.PositiveIntegerField(help_text="Estimated calories per serving")
     instructions = models.TextField()
     featured = models.BooleanField(default=False)
+    likes = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ("-created_at", "title")
