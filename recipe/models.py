@@ -1,7 +1,7 @@
 from django.db import models
-from django.core.validators import MinValueValidator,MaxValueValidator
 from django.conf import settings
-from django.forms import ValidationError
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -11,8 +11,12 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 class Profile(TimeStampedModel):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
-    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, 
+                                on_delete=models.CASCADE, 
+                                related_name='profile')
+    profile_picture = models.ImageField(upload_to='profiles/', 
+                                        blank=True, 
+                                        null=True)
     bio = models.CharField(max_length=1000, blank=True)
     location = models.CharField(max_length=100, blank=True)
 
@@ -42,14 +46,21 @@ class Recipe(TimeStampedModel):
         )
 
     title = models.CharField(max_length=200)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='recipes')
-    category = models.IntegerField(validators=[MinValueValidator(0)],choices=CategoryTypes.CHOICES, default=CategoryTypes.VEG)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='recipes')
+    category = models.PositiveIntegerField(choices=CategoryTypes.CHOICES, 
+                                           default=CategoryTypes.VEG)
     cuisine = models.CharField(max_length=50)
-    difficulty = models.IntegerField(validators=[MinValueValidator(0)],choices=DifficultyLevels.CHOICES, default=DifficultyLevels.EASY)
-    servings = models.IntegerField(default=1, help_text="Number of people the recipe serves",validators=[MinValueValidator(1)])
-    prep_time = models.IntegerField(help_text="Time required to prepare ingredients in minutes")
-    total_time = models.IntegerField(help_text="Preparation time + Cooking Time in minutes",validators=[MaxValueValidator(300),MinValueValidator(5)])
-    calories = models.IntegerField(validators=[MinValueValidator(0)])
+    difficulty = models.PositiveIntegerField(choices=DifficultyLevels.CHOICES, 
+                                             default=DifficultyLevels.EASY)
+    servings = models.PositiveIntegerField(default=1,
+                                            help_text="Number of people the recipe serves")
+    prep_time = models.PositiveIntegerField(help_text="Time required to prepare ingredients in minutes")
+    total_time = models.PositiveIntegerField(help_text="Preparation time + Cooking Time in minutes",
+                                             validators=[MaxValueValidator(300),
+                                                         MinValueValidator(5)])
+    calories = models.PositiveIntegerField(help_text="Estimated calories per serving")
     instructions = models.TextField()
     featured = models.BooleanField(default=False)
 
@@ -77,6 +88,7 @@ class Ingredient(TimeStampedModel):
         TABLESPOON = 3
         CUP = 4
         PIECE = 5
+
         CHOICES = (
             (GRAM, "grams"),
             (KILOGRAM, "kilogram"),
@@ -86,19 +98,27 @@ class Ingredient(TimeStampedModel):
             (PIECE, "piece"),
         )
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='ingredients')
+    recipe = models.ForeignKey(Recipe, 
+                               on_delete=models.CASCADE, 
+                               related_name='ingredients')
     name = models.CharField(max_length=100)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    unit = models.IntegerField(validators=[MinValueValidator(0)],choices=UnitTypes.CHOICES, default=UnitTypes.GRAM)
+    quantity = models.DecimalField(max_digits=10, 
+                                   decimal_places=2)
+    unit = models.IntegerField(choices=UnitTypes.CHOICES,
+                                default=UnitTypes.GRAM)
     optional = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name}'
 
+
 class Collection(TimeStampedModel):
     title = models.CharField(max_length=200)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='collections')
-    recipes = models.ManyToManyField(Recipe, blank=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, 
+                              on_delete=models.CASCADE, 
+                              related_name='collections')
+    recipes = models.ManyToManyField(Recipe, 
+                                     blank=True)
     class Meta:
         ordering = ('-created_at', 'title')
         unique_together = ('title', 'owner')
@@ -106,13 +126,20 @@ class Collection(TimeStampedModel):
     def __str__(self):
         return f"{self.title}"
 
-class RecipeImage(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='recipe_img',blank=True,null=True)
+def recipe_image_upload_to(instance, filename):
+    return f'recipe_images/{instance.recipe.id}/{filename}'
+
+class RecipeImage(TimeStampedModel):
+    recipe = models.ForeignKey(Recipe,
+                                on_delete=models.CASCADE, 
+                                related_name='images')
+    image = models.ImageField(upload_to=recipe_image_upload_to,
+                               blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering =('-created_at',)
+        ordering = ('-created_at',)
 
     def __str__(self):
         return f"Image for recipe: {self.recipe.title}"
+
