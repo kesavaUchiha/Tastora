@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     
     # Apps
     'accounts.apps.AccountsConfig',
-    'recipe.apps.RecipeConfig'
+    'recipe.apps.RecipeConfig',
+    'recipe_management.apps.RecipeManagementConfig',
 ]
 
 MIDDLEWARE = [
