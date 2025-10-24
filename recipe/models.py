@@ -102,7 +102,7 @@ class Nutrition(models.Model):
     carbohydrates = models.PositiveIntegerField(help_text="Estimated carbohydrates per serving")
 
     def __str__(self):
-        return f'Nuttitions of {self.recipe}'
+        return f'Nutrition of {self.recipe}'
 
 class Ingredient(models.Model):
 
