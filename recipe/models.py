@@ -10,13 +10,18 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+def user_profile_upload_to(instance, filename):
+    # Store profile pictures in: media/<user.id>/profile/<filename>
+    return f"{instance.user.id}/profile/{filename}"
+
 class Profile(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, 
                                 on_delete=models.CASCADE, 
-                                related_name='profile')
-    profile_picture = models.ImageField(upload_to='profiles/', 
+                                related_name='profile',
+                                db_index=True)
+    profile_picture = models.ImageField(upload_to=user_profile_upload_to, 
                                         blank=True, 
-                                        null=True)
+                                        null=True,default='default.png')
     bio = models.CharField(max_length=1000, blank=True)
     location = models.CharField(max_length=100, blank=True)
 
@@ -45,30 +50,36 @@ class Recipe(TimeStampedModel):
             (HARD, "Hard"),
         )
 
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200,db_index=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
-                                related_name='recipes')
+                                related_name='recipes',
+                                db_index=True)
     category = models.PositiveIntegerField(choices=CategoryTypes.CHOICES, 
-                                           default=CategoryTypes.VEG)
-    cuisine = models.CharField(max_length=50)
+                                           default=CategoryTypes.VEG,
+                                           db_index=True)
+    cuisine = models.CharField(max_length=50,db_index=True)
     difficulty = models.PositiveIntegerField(choices=DifficultyLevels.CHOICES, 
-                                             default=DifficultyLevels.EASY)
+                                             default=DifficultyLevels.EASY,
+                                             db_index=True)
     servings = models.PositiveIntegerField(default=1,
                                             help_text="Number of people the recipe serves")
     prep_time = models.PositiveIntegerField(help_text="Time required to prepare ingredients in minutes")
     total_time = models.PositiveIntegerField(help_text="Preparation time + Cooking Time in minutes",
                                              validators=[MaxValueValidator(300),
                                                          MinValueValidator(5)])
-    calories = models.PositiveIntegerField(help_text="Estimated calories per serving")
     instructions = models.TextField()
-    featured = models.BooleanField(default=False)
+    featured = models.BooleanField(default=False,db_index=True)
     likes = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ("-created_at", "title")
         unique_together = ('title', 'author')
         verbose_name_plural = 'Recipes'
+        indexes = [
+        models.Index(fields=["-created_at"]),
+        models.Index(fields=["likes"]),
+    ]
 
     def __str__(self):
         return f'{self.title}'
@@ -79,8 +90,21 @@ class Recipe(TimeStampedModel):
             raise ValidationError({
                 'total_time': "Total time cannot be less than preparation time."
             })
+        
+class Nutrition(models.Model):
+    
+    recipe = models.ForeignKey(Recipe,on_delete=models.CASCADE,related_name='nutritions')
+    calories = models.PositiveIntegerField(help_text="Estimated calories per serving")
+    protein = models.PositiveIntegerField(help_text="Estimated protein per serving")
+    fat = models.PositiveIntegerField(help_text="Estimated fat per serving")
+    sugar = models.PositiveIntegerField(help_text="Estimated sugar per serving")
+    fiber = models.PositiveIntegerField(help_text="Estimated fiber per serving")
+    carbohydrates = models.PositiveIntegerField(help_text="Estimated carbohydrates per serving")
 
-class Ingredient(TimeStampedModel):
+    def __str__(self):
+        return f'Nuttitions of {self.recipe}'
+
+class Ingredient(models.Model):
 
     class UnitTypes:
         GRAM = 0
@@ -112,9 +136,8 @@ class Ingredient(TimeStampedModel):
     def __str__(self):
         return f'{self.name}'
 
-
 class Collection(TimeStampedModel):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200,db_index=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, 
                               on_delete=models.CASCADE, 
                               related_name='collections')
@@ -128,7 +151,12 @@ class Collection(TimeStampedModel):
         return f"{self.title}"
 
 def recipe_image_upload_to(instance, filename):
-    return f'recipe_images/{instance.recipe.id}/{filename}'
+    """
+    Store recipe images in: media/<user.id>/recipe/<recipe_title>/<filename>
+    """
+    # Clean recipe title for file path (remove spaces/special chars)
+    safe_title = "".join(c if c.isalnum() else "_" for c in instance.recipe.title)
+    return f"{instance.recipe.author.id}/recipe/{safe_title}/{filename}"
 
 class RecipeImage(TimeStampedModel):
     recipe = models.ForeignKey(Recipe,
@@ -136,7 +164,6 @@ class RecipeImage(TimeStampedModel):
                                 related_name='images')
     image = models.ImageField(upload_to=recipe_image_upload_to,
                                blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ('-created_at',)
