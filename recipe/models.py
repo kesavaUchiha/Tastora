@@ -85,11 +85,9 @@ class Recipe(TimeStampedModel):
         return f'{self.title}'
     
     def clean(self):
-
-        if self.total_time < self.prep_time:
-            raise ValidationError({
-                'total_time': "Total time cannot be less than preparation time."
-            })
+        if self.prep_time is not None and self.total_time is not None:
+            if self.total_time < self.prep_time:
+                raise ValidationError("Total time cannot be less than prep time.")
         
 class Nutrition(models.Model):
     

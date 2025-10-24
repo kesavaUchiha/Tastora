@@ -1,11 +1,12 @@
-<div class="flex flex-wrap gap-3 items-center mb-3 border-b pb-2">
+<div class="flex flex-wrap gap-3 items-center mb-3 border-b border-orange-400 pb-2">
   <input type="text" name="ingredient_name[]" placeholder="Ingredient name"
-         class="flex-1 border-gray-300 rounded px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+         class="flex-1 border border-orange-400 rounded px-3 py-2 focus:ring-orange-400 focus:border-orange-400 text-gray-700 placeholder-orange-300 transition">
 
   <input type="number" step="0.01" name="ingredient_quantity[]" placeholder="Qty"
-         class="w-24 border-gray-300 rounded px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+         class="w-24 border border-orange-400 rounded px-3 py-2 focus:ring-orange-400 focus:border-orange-400 text-gray-700 placeholder-orange-300 transition">
 
-  <select name="ingredient_unit[]" class="border-gray-300 rounded px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+  <select name="ingredient_unit[]" 
+          class="border border-orange-400 rounded px-3 py-2 focus:ring-orange-400 focus:border-orange-400 text-gray-700 transition">
     <option value="0">grams</option>
     <option value="1">kg</option>
     <option value="2">tsp</option>
@@ -15,11 +16,11 @@
   </select>
 
   <label class="flex items-center text-sm text-gray-600">
-    <input type="checkbox" name="ingredient_optional[]" value="True" class="mr-1"> Optional
+    <input type="checkbox" name="ingredient_optional[]" value="True" class="mr-1 accent-orange-500"> Optional
   </label>
 
   <button type="button" onclick="this.closest('div').remove()"
-          class="text-red-600 hover:text-red-800 font-semibold">
+          class="text-orange-500 hover:text-orange-700 font-semibold transition">
     ✖
   </button>
 </div>
